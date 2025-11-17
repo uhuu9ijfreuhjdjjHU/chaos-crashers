@@ -24,14 +24,33 @@ var ( //declvare variable for images, name *ebiten.Image.
 	player1InitY = float64(240)
 	axeZombieInitXTemp = float64 (randFloat(1,100))
 	axeZombieInitYTemp = float64 (randFloat(1,100))
-	lightSaberX = float64 (player1InitX + 200)
-	lightSaberY = float64 (player1InitY + 200)
-
+	lightSaberX float64
+	lightSaberY float64
 
 	player1hp = 20
 	tickCount = 0
 )
 
+type axeZombie struct{
+
+}
+
+func enemyMovement(targetX, targetY, enemyX, enemyY, speed float64) (float64, float64) {
+	if enemyX < (targetX - 80){ //enemie movement
+		enemyX += speed
+	}
+	if enemyX > (targetX + 80){
+		enemyX -= speed
+	}
+	if enemyY < (targetY - 80){
+		enemyY += speed
+	}
+	if enemyY > (targetY + 80){
+		enemyY -= speed
+	}
+
+	return enemyX, enemyY
+}
 
 func loadAxeZombieSprites() {
   axeZombieSprites = make([]*ebiten.Image, 8)
@@ -85,6 +104,10 @@ func (g *Game) Update() error { //game logic
 
 	tickCount++
 	
+	lightSaberX = float64 (player1InitX + 100)
+	lightSaberY = float64 (0)
+
+	//any movement code cannot be a switch because it will prevent diagnol
 	if ebiten.IsKeyPressed(ebiten.KeyD) == true { //player movement
 		player1InitX = player1InitX + 3
 	}
@@ -96,20 +119,15 @@ func (g *Game) Update() error { //game logic
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyW) == true {
 		player1InitY = player1InitY - 3
-	}
-
-	if axeZombieInitXTemp < (player1InitX - 80){ //enemie movement
-		axeZombieInitXTemp++
-	}
-	if axeZombieInitXTemp > (player1InitX + 80){
-		axeZombieInitXTemp--
-	}
-	if axeZombieInitYTemp < (player1InitY - 80){
-		axeZombieInitYTemp++
-	}
-	if axeZombieInitYTemp > (player1InitY + 80){
-		axeZombieInitYTemp--
 	} 
+
+	axeZombieInitXTemp, axeZombieInitYTemp = enemyMovement(
+    player1InitX,
+    player1InitY,
+    axeZombieInitXTemp,
+    axeZombieInitYTemp,
+		0.5,
+	)
 
 	// enemy damage when close enough
 	hitRange := 100.0 // adjust to taste
@@ -160,6 +178,5 @@ func main() {
 	
 	if err := ebiten.RunGame(&Game{}); err != nil { 
 		log.Fatal(err)
-	}
-	
+	}	
 }
