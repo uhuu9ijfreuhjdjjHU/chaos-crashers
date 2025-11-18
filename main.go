@@ -59,7 +59,7 @@ func init() { //initialize images to variables here.
 	}
 
 	loadAxeZombieSprites()
-	spawnZombies()
+	spawnZombies(0.1)
 }
 
 type Game struct{}
@@ -74,8 +74,8 @@ func (g *Game) Update() error { //game logic
 	lightSaberY = float64 (0)
 
 
-moveSpeed := 3.0
-blockRange := 40.0
+	moveSpeed := 3.0
+	blockRange := 40.0
 
 // MOVE RIGHT (D)
 if ebiten.IsKeyPressed(ebiten.KeyD) &&
@@ -104,13 +104,18 @@ if ebiten.IsKeyPressed(ebiten.KeyW) &&
 
 for i := range zombies {
   
-	zombies[i].x, zombies[i].y = enemyMovement(
-    player1InitX,
-  	player1InitY,
-    zombies[i].x,
+
+for i := range zombies {
+  zombies[i].x, zombies[i].y = enemyMovement(
+    player1InitX,      // target (player)
+    player1InitY,
+    zombies[i].x,      // current zombie position
     zombies[i].y,
-    zombies[i].speed,
-  )
+    zombies[i].speed,  // each zombie's speed
+    zombies,           // the entire slice of enemies
+    i,                 // the index of THIS zombie
+    )
+}
 
   hitRange := 80.0 // damage player if close
   if abs(zombies[i].x-player1InitX) < hitRange &&

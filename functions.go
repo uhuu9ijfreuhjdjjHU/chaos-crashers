@@ -9,7 +9,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
-func spawnZombies() {
+func spawnZombies(speedSelect float64) {
   count := randInt(3, 6)
 
   for i := 0; i < count; i++ {
@@ -18,28 +18,59 @@ func spawnZombies() {
     y:     randFloat(0, float64(screenHeight + 100)),
     hp:    randInt(3, 10),
     level: randInt(1, 3),
-    speed: randFloat(0.3, 1.0),
+    speed: speedSelect,
     }
     
 		zombies = append(zombies, z)
   }
 }
 
-func enemyMovement(targetX, targetY, enemyX, enemyY, speed float64) (float64, float64) {
-	if enemyX < (targetX - 80){ //enemie movement
-		enemyX += speed
-	}
-	if enemyX > (targetX + 80){
-		enemyX -= speed
-	}
-	if enemyY < (targetY - 80){
-		enemyY += speed
-	}
-	if enemyY > (targetY + 80){
-		enemyY -= speed
-	}
 
-	return enemyX, enemyY
+
+func enemyMovement(targetX, targetY, x, y, speed float64, zombies []axeZombie, self int) (float64, float64) {
+  // --- Chase player ---
+  dx := 0.0
+  dy := 0.0
+
+  if x < targetX-80 {
+    dx += speed
+  }
+  if x > targetX+80 {
+    dx -= speed
+  }
+ 	if y < targetY-80 {
+  	dy += speed
+  }
+  if y > targetY+80 {
+    dy -= speed
+  }
+
+    // --- Avoid other zombies ---
+  avoidDist := 40.0
+
+  for i, z := range zombies {
+    if i == self {
+      continue
+    }
+
+    diffX := x - z.x
+    diffY := y - z.y
+
+    if abs(diffX) < avoidDist && abs(diffY) < avoidDist {
+    // push away from nearby zombie
+			if diffX > 0 {
+        dx += speed * 0.5
+      } else {
+        dx -= speed * 0.5
+      }
+      if diffY > 0 {
+        dy += speed * 0.5
+      } else {
+        dy -= speed * 0.5
+      }
+    }
+  }
+ return x + dx, y + dy
 }
 
 func loadAxeZombieSprites() {
