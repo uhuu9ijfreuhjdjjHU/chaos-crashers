@@ -13,6 +13,7 @@ var ( //declvare variable for images, name *ebiten.Image.
 	player1 *ebiten.Image
 
 	axeZombieSprites []*ebiten.Image
+	axeZombieHitSprites []*ebiten.Image
 
 	sword *ebiten.Image
 
@@ -43,6 +44,8 @@ type axeZombie struct{
 	hp 			int
 	x, y 		float64
 	speed		float64
+	hit 		bool
+	hitTimer int
 	}
 
 func init() { //initialize images to variables here.
@@ -64,10 +67,21 @@ func init() { //initialize images to variables here.
 	}
 
 	loadAxeZombieSprites()
-	spawnZombies(1)
+	loadAxeZombieHitSprites()
+	spawnZombies(1) //function condition is move speed
 }
 
 func (g *Game) Update() error { //game logic
+
+
+	for i := range zombies {
+    if zombies[i].hitTimer > 0 {
+      zombies[i].hitTimer--
+      zombies[i].hit = true
+    } else {
+      zombies[i].hit = false
+    }
+	}
 
 	tickCount++
 
@@ -99,7 +113,7 @@ func (g *Game) Update() error { //game logic
 	}
 
 	moveSpeed := 3.0
-	blockRange := 40.0
+	blockRange := 35.0
 
 // MOVE RIGHT (D)
 if ebiten.IsKeyPressed(ebiten.KeyD) &&
@@ -160,6 +174,8 @@ for i := range zombies {
   if abs(zombies[i].x - swordX) < swordHitRange && abs(zombies[i].y - swordY) < swordHitRange {
   if (tickCount % 60 == 0){
 		zombies[i].hp--
+		zombies[i].hit = true
+		zombies[i].hitTimer = 10
   	fmt.Println("Zombie", i, "hp:", zombies[i].hp)
 		}
   }
@@ -178,24 +194,31 @@ func (g *Game) Draw(screen *ebiten.Image) {  //called every frame, graphics.
 	op.GeoM.Translate(player1InitX,player1InitY)
 	opAxeZombie.GeoM.Translate(axeZombieInitXTemp,axeZombieInitYTemp)		
 
-	screen.DrawImage(player1, op)	
-
 	opSword := &ebiten.DrawImageOptions{} //todo: fix
 	opSword.GeoM.Translate(swordX, swordY)
+
+	screen.DrawImage(player1, op)	
 
 	screen.DrawImage(sword, opSword)
 
 	frame := (tickCount / 8) % len(axeZombieSprites)
-	sprite := axeZombieSprites[frame]
+	axeZombieSpriteFrame := axeZombieSprites[frame]
+	axeZombieHitSpriteFrame := axeZombieHitSprites[frame]
 
 	for _, z := range zombies {
 		if z.hp <= 0 {
 			continue
 		}
-
-		op := &ebiten.DrawImageOptions{}
- 		op.GeoM.Translate(z.x, z.y)
-  	screen.DrawImage(sprite, op)
+		
+		if z.hit == true {	
+			op := &ebiten.DrawImageOptions{}
+ 			op.GeoM.Translate(z.x, z.y)
+  		screen.DrawImage(axeZombieHitSpriteFrame, op)
+		} else {
+			op := &ebiten.DrawImageOptions{}
+ 			op.GeoM.Translate(z.x, z.y)
+  		screen.DrawImage(axeZombieSpriteFrame, op)
+		}
 	}
 }
 

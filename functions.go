@@ -87,6 +87,20 @@ func loadAxeZombieSprites() {
 	}
 }
 
+func loadAxeZombieHitSprites() {
+  axeZombieHitSprites = make([]*ebiten.Image, 8)
+
+  for i := 1; i <= 8; i++ {
+    filename := fmt.Sprintf("assets/sprites/enemies/axeZombie/axeZombieHit/axeZombieHit%02d.png", i)
+
+    img, _, err := ebitenutil.NewImageFromFile(filename)
+    if err != nil {
+    log.Fatal(err)
+    }
+    axeZombieHitSprites[i-1] = img
+	}
+}
+
 func abs(f float64) float64 {
   if f < 0 {
     return -f
