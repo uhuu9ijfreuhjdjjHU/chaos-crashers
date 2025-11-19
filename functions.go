@@ -32,16 +32,16 @@ func enemyMovement(targetX, targetY, x, y, speed float64, zombies []axeZombie, s
   dx := 0.0
   dy := 0.0
 
-  if x < targetX-80 {
+  if x < targetX - 80 {
     dx += speed
   }
-  if x > targetX+80 {
+  if x > targetX + 80 {
     dx -= speed
   }
- 	if y < targetY-80 {
+ 	if y + 20 < targetY - 80 {
   	dy += speed
   }
-  if y > targetY+80 {
+  if y - 20 > targetY + 80 {
     dy -= speed
   }
 

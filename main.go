@@ -14,7 +14,7 @@ var ( //declvare variable for images, name *ebiten.Image.
 
 	axeZombieSprites []*ebiten.Image
 
-	lightSaber *ebiten.Image
+	sword *ebiten.Image
 
 	screenHeight = 1080
 	screenWidth = 1920
@@ -23,14 +23,17 @@ var ( //declvare variable for images, name *ebiten.Image.
 	player1InitY = float64(240)
 	axeZombieInitXTemp = float64 (randFloat(1,100))
 	axeZombieInitYTemp = float64 (randFloat(1,100))
-	lightSaberX float64
-	lightSaberY float64
+	swordX float64
+	swordY float64
 
 	player1hp = 20
 
 	tickCount = 0
 
 	zombies []axeZombie
+
+
+	swordLocation = rune ('a') //a = left, d = right, s = down, w = up
 )
 
 type axeZombie struct{
@@ -53,7 +56,7 @@ func init() { //initialize images to variables here.
 		log.Fatal(err)
 	}
 
-	lightSaber, _, err = ebitenutil.NewImageFromFile("assets/images/lightSaber.png") //will not run if empty
+	sword, _, err = ebitenutil.NewImageFromFile("assets/images/sword.png") //will not run if empty
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -64,15 +67,36 @@ func init() { //initialize images to variables here.
 
 type Game struct{}
 
-
-
 func (g *Game) Update() error { //game logic
 
 	tickCount++
-	
-	lightSaberX = float64 (player1InitX + 100)
-	lightSaberY = float64 (0)
 
+	switch {
+
+		case ebiten.IsKeyPressed(ebiten.KeyArrowRight):	
+			swordLocation = 'd'
+		case ebiten.IsKeyPressed(ebiten.KeyArrowLeft):	
+			swordLocation = 'a'
+		case ebiten.IsKeyPressed(ebiten.KeyArrowDown):	
+			swordLocation = 's'
+		case ebiten.IsKeyPressed(ebiten.KeyArrowUp):
+			swordLocation = 'w'
+	}
+
+	switch {
+		case swordLocation == 'd':
+			swordX = float64 (player1InitX + 100)
+			swordY = float64 (player1InitY)
+		case swordLocation == 'a':
+			swordX = float64 (player1InitX - 100)
+			swordY = float64 (player1InitY)
+		case swordLocation == 's':
+			swordX = float64 (player1InitX)
+			swordY = float64 (player1InitY + 100)
+		case swordLocation == 'w':
+			swordX = float64 (player1InitX)
+			swordY = float64 (player1InitY - 100)
+	}
 
 	moveSpeed := 3.0
 	blockRange := 40.0
@@ -144,15 +168,13 @@ func (g *Game) Draw(screen *ebiten.Image) {  //called every frame, graphics.
 
 	screen.DrawImage(player1, op)	
 
-	opLightSaber := &ebiten.DrawImageOptions{} //todo: fix
-	opLightSaber.GeoM.Translate(lightSaberX, lightSaberY)
+	opSword := &ebiten.DrawImageOptions{} //todo: fix
+	opSword.GeoM.Translate(swordX, swordY)
 
-	if ebiten.IsKeyPressed(ebiten.KeyArrowLeft) == true {
-		screen.DrawImage(lightSaber, opLightSaber)
-	}
+	screen.DrawImage(sword, opSword)
 
-frame := (tickCount / 8) % len(axeZombieSprites)
-sprite := axeZombieSprites[frame]
+	frame := (tickCount / 8) % len(axeZombieSprites)
+	sprite := axeZombieSprites[frame]
 
 	for _, z := range zombies {
 		op := &ebiten.DrawImageOptions{}
