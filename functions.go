@@ -19,6 +19,7 @@ func spawnZombies(speedSelect float64) {
     hp:    randInt(3, 10),
     level: randInt(1, 3),
     speed: speedSelect,
+		facingRight: true,
     }
     
 		zombies = append(zombies, z)
@@ -46,9 +47,11 @@ func enemyMovement(targetX, targetY, x, y, speed float64, knockBackSpeed float64
 	if !zombies[self].hit {
   	if x < targetX - 80 {
     	dx += speed
+			zombies[self].facingRight = true
   	}
   	if x > targetX + 80 {
     	dx -= speed
+			zombies[self].facingRight = false
   	}
  		if y + 20 < targetY - 80 {
   		dy += speed
@@ -58,7 +61,7 @@ func enemyMovement(targetX, targetY, x, y, speed float64, knockBackSpeed float64
   	}
 	}
 
-    // --- Avoid other zombies ---
+    // --- Avoid other zombies ---\\
   avoidDist := 40.0
 
   for i, z := range zombies {
@@ -69,8 +72,7 @@ func enemyMovement(targetX, targetY, x, y, speed float64, knockBackSpeed float64
     diffX := x - z.x
     diffY := y - z.y
 
-    if abs(diffX) < avoidDist && abs(diffY) < avoidDist {
-    // push away from nearby zombie
+    if abs(diffX) < avoidDist && abs(diffY) < avoidDist { // push away from nearby zombie
 			if diffX > 0 {
         dx += speed * 0.5
       } else {

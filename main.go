@@ -44,6 +44,7 @@ type axeZombie struct{
 	speed		float64
 	hit 		bool
 	hitTimer int
+	facingRight bool
 	}
 
 func init() { //initialize images to variables here.
@@ -220,9 +221,19 @@ func (g *Game) Draw(screen *ebiten.Image) {  //called every frame, graphics.
  			op.GeoM.Translate(z.x, z.y)
   		screen.DrawImage(axeZombieHitSpriteFrame, op)
 		} else {
+			if !z.facingRight{
 			op := &ebiten.DrawImageOptions{}
+			w := float64(axeZombieSpriteFrame.Bounds().Dx())
+
+			op.GeoM.Scale(-1,1)
+ 			op.GeoM.Translate(z.x + w, z.y)
+  		screen.DrawImage(axeZombieSpriteFrame, op)
+			} else {
+			op := &ebiten.DrawImageOptions{}
+			op.GeoM.Scale(1,1) 
  			op.GeoM.Translate(z.x, z.y)
   		screen.DrawImage(axeZombieSpriteFrame, op)
+			}
 		}
 	}
 }
