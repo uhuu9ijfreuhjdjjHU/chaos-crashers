@@ -20,6 +20,7 @@ func spawnAxeZombies(speedSelect float64) {
     level: randInt(1, 3),
     speed: speedSelect,
 		facingRight: true,
+		invulnerable: false,
     }
     
 		zombies = append(zombies, z)
