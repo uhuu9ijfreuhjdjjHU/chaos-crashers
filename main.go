@@ -32,11 +32,13 @@ var ( //declvare variable for images, name *ebiten.Image.
 	zombies []axeZombie
 
 	player1hp = 20
-	swordLocation = rune ('s') //a = left, d = right, s = down, w = up
 	hitFrameDuration = int(0)
-	playerAttackActive = bool(false)
 	playerAttackFrames = int(15) //frame length of player attack. hit frame duration will call to this at runtime, do not use magic numbers.
-	playerAttackFramesTimer = int(0)
+	playerAttackFramesTimer = int(0)		
+	swordLocation = rune ('s') //a = left, d = right, s = down, w = up
+	playerAttackActive = bool(false)
+	playerAttackFramesStart = bool(false)
+	playerAttackCount = int(1) //for determining if attack animation should be flipped or not
 )
 
 type Game struct{}
@@ -107,7 +109,7 @@ func (g *Game) Update() error { //game logic
 			swordLocation = 'd'
 			if hitFrameDuration == 0 {
 				hitFrameDuration = playerAttackFrames
-				playerAttackFramesTimer = playerAttackFrames - 1
+				playerAttackFramesStart = true
 			}
 		case ebiten.IsKeyPressed(ebiten.KeyArrowLeft):	
 			swordLocation = 'a'
@@ -266,11 +268,16 @@ func (g *Game) Draw(screen *ebiten.Image) {  //called every frame, graphics.
 		}
 	}
 
-	if playerAttackFramesTimer > 0 {
-		screen.DrawImage(swordSprites[playerAttackFramesTimer], opSword)
-		playerAttackFramesTimer--
+	if playerAttackFramesStart == true { //detects if attack has been initiated
+		if playerAttackFramesTimer == playerAttackFrames { //statement to end attack
+			playerAttackFramesTimer = 0
+			playerAttackFramesStart = false
+		} else if playerAttackFramesTimer != playerAttackFrames { //statement to start or continue attack
+			screen.DrawImage(swordSprites[playerAttackFramesTimer], opSword)
+			playerAttackFramesTimer++
+		}
 	} else {
-		screen.DrawImage(swordSprites[1], opSword)
+		screen.DrawImage(swordSprites[0], opSword)
 	}
 }
 
