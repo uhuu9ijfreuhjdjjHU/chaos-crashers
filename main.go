@@ -6,6 +6,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"math"
 )
 
 var ( //declvare variable for images, name *ebiten.Image.
@@ -265,57 +266,88 @@ func (g *Game) Draw(screen *ebiten.Image) {  //called every frame, graphics.
 	}
 
 
-if playerAttackFramesStart == true { // detects if attack has started	
-	if playerAttackFramesTimer == playerAttackFrames { // end attack
-    playerAttackFramesTimer = 0
-    playerAttackFramesStart = false
-		playerAttackFlipped = (playerAttackCount % 2 == 0)
-	} else { // continue attack
-			op := &ebiten.DrawImageOptions{} // Create a fresh draw options
 
-    	frameImg := swordSprites[playerAttackFramesTimer]
-			
-    if playerAttackFlipped { // Flip vertically when divisible by 2
-			switch {
-				case swordLocation == 'd':
-	    		h := float64(frameImg.Bounds().Dy())
-    			op.GeoM.Scale(1, -1)
-    			op.GeoM.Translate(swordX, swordY+h)
-				case swordLocation == 'a':
-    			w := float64(frameImg.Bounds().Dx())
-    			h := float64(frameImg.Bounds().Dy())
-    			op.GeoM.Scale(-1, -1)
-    			op.GeoM.Translate(swordX + w, swordY + h)
-			}
-    } else {
-      	switch {
-      	case swordLocation == 'd':
-      		op.GeoM.Translate(swordX, swordY)
-				case swordLocation == 'a':
-					w := float64(frameImg.Bounds().Dx())
-					op.GeoM.Scale(-1,1)
-					op.GeoM.Translate(swordX + w, swordY)	
-      	}
+	if playerAttackFramesStart { // detects if player attack has started
+  	if playerAttackFramesTimer == playerAttackFrames { // end of attack
+    	playerAttackFramesTimer = 0
+    	playerAttackFramesStart = false
+    	playerAttackFlipped = (playerAttackCount % 2 == 0)
+  	} else { // continue attack
+			op := &ebiten.DrawImageOptions{}
+  		frameImg := swordSprites[playerAttackFramesTimer]
+
+  		w := float64(frameImg.Bounds().Dx()) // Dimensions
+  		h := float64(frameImg.Bounds().Dy())
+  		cx := w / 2
+  		cy := h / 2
+
+			var angle float64 // Determine angle (base sprite faces RIGHT)
+  		
+			switch swordLocation {
+    		case 'd': // right
+      		angle = 0
+    		case 'a': // left
+      		angle = math.Pi
+    		case 's': // down
+      		angle = math.Pi / 2
+    		case 'w': // up
+      		angle = -math.Pi / 2
+    	}
+    	
+			scaleX := 1.0 // Apply vertical flipping if attack count requires
+    	scaleY := 1.0
+    		
+			if playerAttackFlipped {
+      	scaleY = -1.0
     	}
 			
-			screen.DrawImage(frameImg, op)
+    	op.GeoM.Translate(-cx, -cy) // pivot center
+			
+    	op.GeoM.Scale(scaleX, scaleY) //scale, verticle
+			
+    	op.GeoM.Rotate(angle) //Rotate
 
+    	op.GeoM.Translate(swordX+cx, swordY+cy) // Move final position (centered)
+
+    	screen.DrawImage(frameImg, op)
+			
     	playerAttackFramesTimer++
-			playerAttackCount++
-		}
-} else { // idle sword frame
-	op := &ebiten.DrawImageOptions{}
-	frameImg := swordSprites[0]
+    	playerAttackCount++
+  	}
+	} else { // idle sword frame
+    op := &ebiten.DrawImageOptions{}
+    frameImg := swordSprites[0]
+ 		
+    w := float64(frameImg.Bounds().Dx()) // Dimensions for idle as well
+    h := float64(frameImg.Bounds().Dy())
+    cx := w / 2
+    cy := h / 2
 
-	if playerAttackFlipped { // flip idle frame based on last attack
-		h := float64(frameImg.Bounds().Dy())
-		op.GeoM.Scale(1, -1)
-		op.GeoM.Translate(swordX, swordY+h)
-	} else {
-		op.GeoM.Translate(swordX, swordY)
-	}
+    scaleX := 1.0
+    scaleY := 1.0
+    if playerAttackFlipped {
+      scaleY = -1.0
+    }
 
-	screen.DrawImage(frameImg, op)
+    var angle float64 // Idle frame always faces whatever swordLocation was last set to
+
+  	switch swordLocation {
+    	case 'd':
+      	angle = 0
+    	case 'a':
+      	angle = math.Pi
+    	case 's':
+      	angle = math.Pi / 2
+    	case 'w':
+      	angle = -math.Pi / 2
+    }
+
+    op.GeoM.Translate(-cx, -cy)
+    op.GeoM.Scale(scaleX, scaleY)
+    op.GeoM.Rotate(angle)
+    op.GeoM.Translate(swordX+cx, swordY+cy)
+
+    screen.DrawImage(frameImg, op)
 	}
 }
 
