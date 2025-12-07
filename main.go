@@ -83,7 +83,7 @@ func (g *Game) Update() error { //game logic
 	tickCount++
 
 	if tickCount % 60 == 0 { //prints every 60 frames for time keeping.
-		fmt.Println("frame", tickCount)
+		fmt.Println("frame", tickCount, ",", "RAM: ", GetSelfRAM(), "MB")
 	}
 
 	for i := range zombies { //keeps track of how long zombies should be "hit" for

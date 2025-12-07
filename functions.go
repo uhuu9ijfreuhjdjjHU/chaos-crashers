@@ -4,6 +4,10 @@ import (
 	"math/rand"
 	"log"
 	"fmt"
+  "os"
+  "bufio"
+  "strings"
+  "strconv"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -28,6 +32,28 @@ func spawnAxeZombies(speedSelect float64) {
 }
 
 
+
+func GetSelfRAM() float64 {
+  
+	file, err := os.Open("/proc/self/status")
+
+  if err != nil {
+  	return -1
+  }
+  
+	defer file.Close()
+
+  scanner := bufio.NewScanner(file)
+    for scanner.Scan() {
+      line := scanner.Text()
+      if strings.HasPrefix(line, "VmRSS:") {
+      fields := strings.Fields(line)
+      kb, _ := strconv.Atoi(fields[1]) // value in KB
+      return float64(kb) / 1024        // return MB
+    }
+  }
+  return -1
+}
 
 func enemyMovement(targetX, targetY, x, y, speed float64, knockBackSpeed float64, knockbackDirection rune, zombies []axeZombie, self int) (float64, float64) {
   // --- Chase player ---
