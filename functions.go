@@ -25,9 +25,32 @@ func spawnAxeZombies(speedSelect float64) {
     speed: speedSelect,
 		facingRight: true,
 		invulnerable: false,
+		walkFrame: randInt(1, len(axeZombieSprites)),
+		walkTimer: 0,
     }
     
 		zombies = append(zombies, z)
+  }
+}
+
+
+
+func zombieWalkCycleUpdate() {
+  for i := range zombies {
+    z := &zombies[i]
+    z.walkTimer++ // advance timer
+
+    // change animation frame every X ticks
+    const walkSpeed = 10 // higher == slower animation
+
+    if z.walkTimer >= walkSpeed {
+      z.walkTimer = 0
+      z.walkFrame++
+
+      if z.walkFrame >= len(axeZombieSprites) {
+        z.walkFrame = 1
+      }
+    }
   }
 }
 

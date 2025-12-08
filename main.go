@@ -54,6 +54,8 @@ type axeZombie struct{
 	hitTimer int
 	facingRight bool
 	invulnerable bool
+	walkFrame int
+	walkTimer int
 	}
 
 func init() { //initialize images to variables here.
@@ -81,6 +83,7 @@ func init() { //initialize images to variables here.
 func (g *Game) Update() error { //game logic
 
 	tickCount++
+	zombieWalkCycleUpdate()
 
 	if tickCount % 60 == 0 { //prints every 60 frames for time keeping.
 		fmt.Println("frame", tickCount, ",", "RAM: ", GetSelfRAM(), "MB")
@@ -235,35 +238,43 @@ func (g *Game) Draw(screen *ebiten.Image) {  //called every frame, graphics.
 
 	screen.DrawImage(player1, op)	
 
-	frame := (tickCount / 8) % len(axeZombieSprites)
-	axeZombieSpriteFrame := axeZombieSprites[frame]
-	axeZombieHitSpriteFrame := axeZombieHitSprites[frame]
+	hitFrame := (tickCount / 8) % len(axeZombieSprites)
+	axeZombieHitSpriteFrame := axeZombieHitSprites[hitFrame]
 
-	for _, z := range zombies {
-		if z.hp <= 0 {
-			continue
-		}
+
+for i := range zombies {
+  z := &zombies[i]
+
+  if z.hp <= 0 {
+    continue
+  }
+
+  if z.walkFrame > 8 {
+    z.walkFrame = 1
+  }
+
+  frame := z.walkFrame
+  axeZombieSpriteFrame := axeZombieSprites[frame]
+
+  if z.hit {
+    op := &ebiten.DrawImageOptions{}
+    op.GeoM.Translate(z.x, z.y)
+    screen.DrawImage(axeZombieHitSpriteFrame, op)
+  } else {
+    op := &ebiten.DrawImageOptions{}
+    w := float64(axeZombieSpriteFrame.Bounds().Dx())
+
+    if !z.facingRight {
+      op.GeoM.Scale(-1, 1)
+      op.GeoM.Translate(z.x+w, z.y)
+    } else {
+      op.GeoM.Translate(z.x, z.y)
+    }
 		
-		if z.hit == true {	
-			op := &ebiten.DrawImageOptions{}
- 			op.GeoM.Translate(z.x, z.y)
-  		screen.DrawImage(axeZombieHitSpriteFrame, op)
-		} else {
-			if !z.facingRight{
-				op := &ebiten.DrawImageOptions{}
-				w := float64(axeZombieSpriteFrame.Bounds().Dx())
+		screen.DrawImage(axeZombieSpriteFrame, op)
+  }
+}
 
-				op.GeoM.Scale(-1,1)
- 				op.GeoM.Translate(z.x + w, z.y)
-  			screen.DrawImage(axeZombieSpriteFrame, op)
-			} else {
-				op := &ebiten.DrawImageOptions{}
-				op.GeoM.Scale(1,1) 
- 				op.GeoM.Translate(z.x, z.y)
-  			screen.DrawImage(axeZombieSpriteFrame, op)
-			}
-		}
-	}
 
 
 

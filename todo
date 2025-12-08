@@ -1,0 +1,1 @@
+zombie movement animation cycle is tied to a global variable so they are all always in sync and it looks sucky.
