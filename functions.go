@@ -43,6 +43,8 @@ func zombieHitAnimationUpdate(animationSpeed float64) {
 			continue
 		}
 
+		z.invulnerable = true
+
 		z.hitAnimTimer++
 
 		if z.hitAnimTimer >= animationSpeed {
@@ -54,6 +56,7 @@ func zombieHitAnimationUpdate(animationSpeed float64) {
 				z.hitFrame = 0
 				z.inHitAnimation = false
 				z.hit = false
+				z.invulnerable = false
 			}
 		}
 	}

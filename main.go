@@ -223,7 +223,7 @@ func (g *Game) Update() error { //game logic
   		fmt.Println("Zombie", i, "hp:", zombies[i].hp)
 		}
 
-		if zombies[i].hit == true {
+		if zombies[i].hit {
 			zombies[i].invulnerable = true
 		}
 	}
