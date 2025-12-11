@@ -29,7 +29,3 @@ if & switch statements:
 file paths:
 
   relative only.
-
-death animation (brainstorm):
-  
-
