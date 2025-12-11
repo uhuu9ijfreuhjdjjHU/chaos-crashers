@@ -30,4 +30,6 @@ file paths:
 
   relative only.
 
+death animation (brainstorm):
+  
 

@@ -13,6 +13,7 @@ var ( //declvare variable for images, name *ebiten.Image.
 	background *ebiten.Image
 	player1 *ebiten.Image
 	swordSprites []*ebiten.Image
+	axeZombieDeathSprites []*ebiten.Image
 
 	axeZombieSprites []*ebiten.Image //an array of image files means it for a animation
 	axeZombieHitSprites []*ebiten.Image	//see functions.go
@@ -27,7 +28,11 @@ var ( //declvare variable for images, name *ebiten.Image.
 	axeZombieInitYTemp = float64 (randFloat(1,100))
 	swordX float64
 	swordY float64
-	axeZombieAnimationSpeed = float64(10) //lower is faster
+	
+	//lower is faster
+	axeZombieAnimationSpeed = float64(10)
+	axeZombieHitAnimationSpeed = float64(5)
+	//higher is faster
 	axeZombieLiteralSpeed = float64(0.7)
 
 	tickCount = 0 //for game time keeping
@@ -47,7 +52,6 @@ var ( //declvare variable for images, name *ebiten.Image.
 
 type Game struct{}
 
-
 type axeZombie struct {
 	level         int
 	hp            int
@@ -62,8 +66,10 @@ type axeZombie struct {
 	walkTimer     float64 
 	hitAnimTimer  float64  
 	inHitAnimation bool
+	deathAnimationPlayed bool
+	deathAnimationTimer float64
+	deathAnimationFrame int
 }
-
 
 func init() { //initialize images to variables here.
 	var err error
@@ -81,7 +87,7 @@ func init() { //initialize images to variables here.
 	loadAxeZombieSprites() //call animation functions here
 	loadAxeZombieHitSprites()
 	loadSwordSprites()
-
+	loadAxeZombieDeathSprites()
 
 	spawnAxeZombies(axeZombieLiteralSpeed) //loads zombies, condition changes zombie speed.
 }
@@ -90,7 +96,9 @@ func (g *Game) Update() error { //game logic
 
 	tickCount++
 	zombieWalkCycleUpdate(axeZombieAnimationSpeed)
-	zombieHitAnimationUpdate(axeZombieAnimationSpeed)
+	zombieHitAnimationUpdate(axeZombieHitAnimationSpeed)	
+	zombieDeathAnimationUpdate(3)
+
 
 	if tickCount % 60 == 0 { //prints every 60 frames for time keeping.
 		fmt.Println("frame", tickCount, ",", "RAM: ", GetSelfRAM(), "MB")
@@ -108,7 +116,7 @@ func (g *Game) Update() error { //game logic
     }
 	}
 
-	if hitFrameDuration == 0 { //makes enemy vulnerable and ends active player attack.
+	if hitFrameDuration == 0 { // prevents player from attacking same enemy.
 		for i := range zombies {
 			if zombies[i].hitTimer == 0 {
 				zombies[i].invulnerable = false
@@ -210,8 +218,8 @@ func (g *Game) Update() error { //game logic
 
 		swordHitRange := 30.0
 
-  	if abs(zombies[i].x - swordX) < swordHitRange && zombies[i].invulnerable == false &&
-		abs(zombies[i].y - swordY) < swordHitRange && playerAttackActive == true && 
+  	if abs(zombies[i].x - swordX) < swordHitRange && !zombies[i].invulnerable &&
+		abs(zombies[i].y - swordY) < swordHitRange && playerAttackActive && 
 		zombies[i].hitTimer <= 0 {
 			zombies[i].hp--
 			zombies[i].hit = true
@@ -241,28 +249,25 @@ func (g *Game) Draw(screen *ebiten.Image) {  //called every frame, graphics.
 	screen.DrawImage(background, nil)
 
 	op := &ebiten.DrawImageOptions{}
-	opAxeZombie := &ebiten.DrawImageOptions{}
-
 	op.GeoM.Translate(player1InitX,player1InitY)
-	opAxeZombie.GeoM.Translate(axeZombieInitXTemp,axeZombieInitYTemp)		
-
 	opSword := &ebiten.DrawImageOptions{}
 	opSword.GeoM.Translate(swordX, swordY)
-
 	screen.DrawImage(player1, op)	
-
 
 	for i := range zombies {
 		z := &zombies[i]
 
-		if z.hp <= 0 {
-			continue
-		}
-
 		op := &ebiten.DrawImageOptions{}
 		w := float64(axeZombieSprites[z.walkFrame].Bounds().Dx())
 
-		if z.inHitAnimation {
+
+
+		if z.hp <= 0 && !z.deathAnimationPlayed {
+			op.GeoM.Translate(z.x, z.y)
+			screen.DrawImage(axeZombieDeathSprites[z.deathAnimationFrame], op)
+		} else if z.hp <= 0 {
+			continue
+		} else if z.inHitAnimation {
 			op.GeoM.Translate(z.x, z.y)
 			screen.DrawImage(axeZombieHitSprites[z.hitFrame], op)
 		} else {
@@ -276,7 +281,6 @@ func (g *Game) Draw(screen *ebiten.Image) {  //called every frame, graphics.
 			screen.DrawImage(axeZombieSprites[z.walkFrame], op)
 		}
 	}
-
 
 	if playerAttackFramesStart { // detects if player attack has started
   	if playerAttackFramesTimer == playerAttackFrames { // end of attack

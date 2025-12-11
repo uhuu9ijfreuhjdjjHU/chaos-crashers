@@ -28,6 +28,9 @@ func spawnAxeZombies(speedSelect float64) {
 		walkFrame: randInt(0, (len(axeZombieSprites) - 1)),
 		hitFrame: 1,
 		inHitAnimation: false,
+		deathAnimationPlayed: false,
+		deathAnimationTimer: 0,
+		deathAnimationFrame: 0,
     }
     
 		zombies = append(zombies, z)
@@ -61,6 +64,32 @@ func zombieHitAnimationUpdate(animationSpeed float64) {
 		}
 	}
 }
+
+
+func zombieDeathAnimationUpdate(animationSpeed float64) {
+	for i := range zombies {
+		z := &zombies[i]
+
+		// Only animate dead zombies that haven't finished their animation
+		if z.hp > 0 || z.deathAnimationPlayed {
+			continue
+		}
+
+		z.deathAnimationTimer++
+
+		if z.deathAnimationTimer >= animationSpeed {
+			z.deathAnimationTimer = 0
+			z.deathAnimationFrame++
+
+			// When last frame reached, mark animation done
+			if z.deathAnimationFrame >= len(axeZombieDeathSprites) {
+				z.deathAnimationPlayed = true
+				z.deathAnimationFrame = len(axeZombieDeathSprites) - 1 // freeze on last frame
+			}
+		}
+	}
+}
+
 
 func zombieWalkCycleUpdate(animationSpeed float64) {
 	for i := range zombies {
@@ -160,6 +189,20 @@ func enemyMovement(targetX, targetY, x, y, speed float64, knockBackSpeed float64
     }
   }
  return x + dx, y + dy
+}
+
+func loadAxeZombieDeathSprites() {
+  axeZombieDeathSprites = make([]*ebiten.Image, 11)
+
+  for i := 1; i <= 11; i++ {
+    filename := fmt.Sprintf("assets/sprites/enemies/axeZombie/axeZombieDeath/zombieDeath%d.png", i)
+
+    img, _, err := ebitenutil.NewImageFromFile(filename)
+    if err != nil {
+    log.Fatal(err)
+    }
+    axeZombieDeathSprites[i-1] = img
+	}
 }
 
 func loadSwordSprites() {
