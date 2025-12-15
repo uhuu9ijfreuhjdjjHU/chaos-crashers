@@ -149,24 +149,24 @@ func enemyMovement(targetX, targetY, x, y, speed float64, knockBackSpeed float64
 	}
 
 	if !zombies[self].hit {
-  	if x < targetX - 80 {
+  	if x < targetX - 100 {
     	dx += speed
 			zombies[self].facingRight = true
   	}
-  	if x > targetX + 80 {
+  	if x > targetX + 100 {
     	dx -= speed
 			zombies[self].facingRight = false
   	}
- 		if y + 20 < targetY - 80 {
+ 		if y + 20 < targetY - 100 {
   		dy += speed
   	}
-  	if y - 20 > targetY + 80 {
+  	if y - 20 > targetY + 100 {
    		dy -= speed
   	}
 	}
 
     // --- Avoid other zombies ---\\
-  avoidDist := 40.0
+  avoidDist := 60.0
 
   for i, z := range zombies {
     if i == self {
@@ -282,4 +282,74 @@ func isBlocked(px, py float64, dx, dy float64, blockRange float64, zombies []axe
 
 func randInt(min, max int) int {
 	return rand.Intn(max-min+1) + min
+}
+
+func zombieLogic() {
+
+	zombieWalkCycleUpdate(axeZombieAnimationSpeed)
+	zombieHitAnimationUpdate(axeZombieHitAnimationSpeed)	
+	zombieDeathAnimationUpdate(3)
+
+	for i := range zombies { //keeps track of how long zombies should be "hit" for
+    if zombies[i].hitTimer > 0 {
+      zombies[i].hitTimer--
+      zombies[i].hit = true
+    } else if zombies[i].hitTimer == 0 {
+      zombies[i].hit = false
+    }
+	}
+
+	for i := range zombies { //zombie ai / logic
+
+		if zombies[i].hp <= 0 {
+			continue
+		}
+		
+  	// movement (once per zombie)
+  	zombies[i].x, zombies[i].y = enemyMovement(
+  		p.x,
+    	p.y,
+    	zombies[i].x,
+    	zombies[i].y,
+    	zombies[i].speed,
+			zombies[i].knockbackSpeed,
+			p.swordLocation,
+    	zombies,
+    	i,
+  	)
+		
+  	//zombie attack
+  	hitRange := 80.0
+  	
+		if abs(zombies[i].x - p.x) < hitRange && 
+		abs(zombies[i].y - p.y) < hitRange && tickCount % 150 == 0 {	
+    	p.hp--
+    	fmt.Println("hp:", p.hp) 
+  	}
+
+		//player attack
+		swordHitRange := 55.0
+
+  	if abs(zombies[i].x - p.swordX) < swordHitRange && !zombies[i].invulnerable &&
+		abs(zombies[i].y - p.swordY) < swordHitRange && p.attackActive && 
+		zombies[i].hitTimer <= 0 {
+			zombies[i].hp--
+			zombies[i].hit = true
+			zombies[i].inHitAnimation = true
+			zombies[i].hitTimer = p.hitFrameDuration
+			zombies[i].hitFrame = 0
+			zombies[i].hitAnimTimer = 0
+			zombies[i].invulnerable = true
+  		fmt.Println("Zombie", i, "hp:", zombies[i].hp)
+		}
+
+		if zombies[i].hit {
+			zombies[i].invulnerable = true
+		}
+	}
+
+    if p.hitFrameDuration > 0 {
+		p.attackActive = true
+		p.hitFrameDuration--
+	}
 }

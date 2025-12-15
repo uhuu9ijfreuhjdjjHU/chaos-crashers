@@ -18,8 +18,8 @@ var ( //declvare variable for images, name *ebiten.Image.
 	axeZombieSprites []*ebiten.Image //an array of image files means it for a animation
 	axeZombieHitSprites []*ebiten.Image	//see functions.go
 
-	screenHeight = 1080
-	screenWidth = 1920
+	screenHeight = 540
+	screenWidth = 960
 
 	//lower is faster
 	axeZombieAnimationSpeed = float64(10)
@@ -33,7 +33,6 @@ var ( //declvare variable for images, name *ebiten.Image.
 )
 
 type Game struct{}
-
 
 type player struct {
 	x float64
@@ -124,25 +123,12 @@ func init() { //initialize images to variables here.
 func (g *Game) Update() error { //game logic
 
 	tickCount++
-	zombieWalkCycleUpdate(axeZombieAnimationSpeed)
-	zombieHitAnimationUpdate(axeZombieHitAnimationSpeed)	
-	zombieDeathAnimationUpdate(3)
-
 
 	if tickCount % 60 == 0 { //prints every 60 frames for time keeping.
 		fmt.Println("frame", tickCount, ",", "RAM: ", GetSelfRAM(), "MB")
 		for i := range zombies {
 			fmt.Println("axe zombie" ,i ," frame: ", zombies[i].walkFrame)
 		}
-	}
-
-	for i := range zombies { //keeps track of how long zombies should be "hit" for
-    if zombies[i].hitTimer > 0 {
-      zombies[i].hitTimer--
-      zombies[i].hit = true
-    } else if zombies[i].hitTimer == 0 {
-      zombies[i].hit = false
-    }
 	}
 
 	if p.hitFrameDuration == 0 { // prevents player from attacking same enemy.
@@ -191,11 +177,13 @@ func (g *Game) Update() error { //game logic
 	}
 	
 	moveSpeed := 3.0 //player move speed
-	blockRange := 35.0 //player collusion stat
+	blockRange := 50.0 //player collusion stat
+
+	//player movement
 
 	// MOVE RIGHT (D)
 	if ebiten.IsKeyPressed(ebiten.KeyD) &&
-  !isBlocked(p.x, p.y, 0, -1, blockRange, zombies) {
+  !isBlocked(p.x - 25, p.y, 1, 0, blockRange, zombies) {
   	p.x += moveSpeed
 	}
 
@@ -207,9 +195,9 @@ func (g *Game) Update() error { //game logic
 
 	// DOWN (S)
 	if ebiten.IsKeyPressed(ebiten.KeyS) &&
-  !isBlocked(p.x, p.y, 0, -1, blockRange, zombies) {
-  	p.y += moveSpeed
-	}
+  !isBlocked(p.x, p.y, 0, 1, blockRange, zombies) { //even though going down should be -1
+  	p.y += moveSpeed																//for deincrimaenting the vert position
+	}																									//the code doesnt work that way.
 
 	// UP (W)
 	if ebiten.IsKeyPressed(ebiten.KeyW) &&
@@ -217,58 +205,7 @@ func (g *Game) Update() error { //game logic
 		p.y -= moveSpeed
 	}
 
-	for i := range zombies { //zombie ai / logic
-
-		if zombies[i].hp <= 0 {
-			continue
-		}
-		
-  	// movement (once per zombie)
-  	zombies[i].x, zombies[i].y = enemyMovement(
-  		p.x,
-    	p.y,
-    	zombies[i].x,
-    	zombies[i].y,
-    	zombies[i].speed,
-			zombies[i].knockbackSpeed,
-			p.swordLocation,
-    	zombies,
-    	i,
-  	)
-		
-  	//~~> player damage check <~~\\
-  	hitRange := 80.0
-  	
-		if abs(zombies[i].x - p.x) < hitRange && 
-		abs(zombies[i].y - p.y) < hitRange && tickCount % 150 == 0 {	
-    	p.hp--
-    	fmt.Println("hp:", p.hp) 
-  	}
-
-		swordHitRange := 30.0
-
-  	if abs(zombies[i].x - p.swordX) < swordHitRange && !zombies[i].invulnerable &&
-		abs(zombies[i].y - p.swordY) < swordHitRange && p.attackActive && 
-		zombies[i].hitTimer <= 0 {
-			zombies[i].hp--
-			zombies[i].hit = true
-			zombies[i].inHitAnimation = true
-			zombies[i].hitTimer = p.hitFrameDuration
-			zombies[i].hitFrame = 0
-			zombies[i].hitAnimTimer = 0
-			zombies[i].invulnerable = true
-  		fmt.Println("Zombie", i, "hp:", zombies[i].hp)
-		}
-
-		if zombies[i].hit {
-			zombies[i].invulnerable = true
-		}
-	}
-
-    if p.hitFrameDuration > 0 {
-		p.attackActive = true
-		p.hitFrameDuration--
-	}
+	zombieLogic()
 
 	return nil
 }

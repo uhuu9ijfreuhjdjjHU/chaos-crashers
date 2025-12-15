@@ -18,7 +18,9 @@ functions:
 
   functions should avoid calling on other functions unless it would aim to alleviate;
 
-  function size, functions should avoid or aim for 50 lines maximum.
+    function size, functions should avoid or aim for 50 lines maximum.
+
+    verboseness of main file code.
 
   recursion should be avoided.
 
