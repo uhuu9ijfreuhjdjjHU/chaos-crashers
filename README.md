@@ -19,3 +19,7 @@ go run .
 enemies may spawn off screen and take a minute to pathfind.
 
 wasd for movement, arrow keys for attack direction.
+
+[^1]:
+    shoutout to my bff @crungulus for his help with assets <3
+[^1]
