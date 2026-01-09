@@ -1,8 +1,8 @@
 Chaos crashers is a top down, wave based hack and slash inspired by soul night for andriod and ios. it uses the ebitengine game engine/framework.
 
-To run:
+Instructions are for debian/ubuntu based distrobutions. Instructions for other distrobutions can be found on ebitengine website.
 
-Instructions are for debian/ubuntu based distrobutions, instructions for other distrobutions can be found on ebitengine website.
+To run:
 
 ```
 sudo apt install gcc
@@ -23,3 +23,4 @@ wasd for movement, arrow keys for attack direction.
 [^1]:
     shoutout to my bff @crungulus for his help with assets <3
 [^1]
+
