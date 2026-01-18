@@ -29,6 +29,10 @@ var ( //declare variable for images, name *ebiten.Image.
 	axeZombieLiteralSpeed = float64(0.7)
 
 	tickCount = 0 //for game time keeping
+	
+	sum int = 0
+	floor [12][12]int
+	floorInit bool = false
 
 	zombies []axeZombie
 )
@@ -134,6 +138,31 @@ func init() { //initialize images to variables here.
 }
 
 func (g *Game) Update() error { //game logic
+
+	if floorInit == false { //floor initialize
+		
+		floor[6][6] = 1
+
+		for i := 0; i < len(floor); i++ {
+	  	for j := 0; j < len(floor[i]); j++ {
+	    	sum += floor[i][j]
+			}
+		}   
+		
+		if sum == 1 {
+			for range randInt(5,10) {
+				initFloor(&floor)
+			}
+			for i := range floor {
+				for j := range floor[i] {
+					fmt.Printf("%2d ", floor[i][j])
+				}
+				fmt.Println()
+			}
+		}
+
+		floorInit = true
+	}
 
 	tickCount++
 

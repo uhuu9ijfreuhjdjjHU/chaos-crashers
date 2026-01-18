@@ -31,9 +31,3 @@ func initFloor(floor *[12][12]int) {
 		}
 	}
 }
-
-//todo:
-
-//func generateFloor(){ //actual logic for rendering levels into floor in order
-
-//}
