@@ -115,7 +115,7 @@ type axeZombie struct {
 func init() { //initialize images to variables here.
 	var err error
 	
- 	background, _, err = ebitenutil.NewImageFromFile("assets/images/go.png") //name, _, etc.
+ 	background, _, err = ebitenutil.NewImageFromFile("assets/sprites/roomAssets/onexOneRoom.png") //name, _, etc.
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -239,8 +239,13 @@ func (g *Game) Update() error { //game logic
 
 func (g *Game) Draw(screen *ebiten.Image) {  //called every frame, graphics
 	
-	// Draw background with camera offset
+	// Draw background with camera offset and scaling
 	opBg := &ebiten.DrawImageOptions{}
+	
+	// Calculate scale factors to fit the background to screen
+	
+	// Apply scaling first, then translate for camera
+	opBg.GeoM.Scale(0.5, 0.5)
 	opBg.GeoM.Translate(-cam.x, -cam.y)
 	screen.DrawImage(background, opBg)
 
@@ -304,11 +309,11 @@ func (g *Game) Draw(screen *ebiten.Image) {  //called every frame, graphics
       		angle = -math.Pi / 2
     	}
     	
-			scaleX := 1.0 // Apply vertical flipping if attack count requires
-    	scaleY := 1.0
+			scaleX := 2.0 // Apply vertical flipping if attack count requires
+    	scaleY := 2.0
     		
 			if p.attackFlipped {
-      	scaleY = -1.0
+      	scaleY = -2.0
     	}
 			
     	op.GeoM.Translate(-cx, -cy) // pivot center
@@ -333,10 +338,10 @@ func (g *Game) Draw(screen *ebiten.Image) {  //called every frame, graphics
     cx := w / 2
     cy := h / 2
 
-    scaleX := 1.0
-    scaleY := 1.0
+    scaleX := 2.0
+    scaleY := 2.0
     if p.attackFlipped {
-      scaleY = -1.0
+      scaleY = -2.0
     }
 
     var angle float64 // Idle frame always faces whatever swordLocation was last set to
@@ -370,7 +375,8 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 
 func main() {
 	ebiten.SetWindowSize(screenWidth, screenHeight)
-	ebiten.SetWindowTitle("Render an image")
+	ebiten.SetWindowTitle("Chaos Crashers")
+	ebiten.SetFullscreen(true)
 	
 	if err := ebiten.RunGame(&Game{}); err != nil { 
 		log.Fatal(err)

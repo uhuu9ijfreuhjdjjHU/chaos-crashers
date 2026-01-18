@@ -46,7 +46,7 @@ func zombieLogic() {
   	}
 
 		//player attack
-		swordHitRange := 55.0
+		swordHitRange := 80.0
 
   	if abs(zombies[i].x - p.swordX) < swordHitRange && !zombies[i].invulnerable &&
 		abs(zombies[i].y - p.swordY) < swordHitRange && p.attackActive && 
