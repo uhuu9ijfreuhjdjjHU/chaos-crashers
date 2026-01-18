@@ -18,8 +18,6 @@ go mod tidy
 go run .
 ```
 
-enemies may spawn off screen and take a minute to pathfind.
-
 wasd for movement, arrow keys for attack direction.
 
 [^1]:
