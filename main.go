@@ -150,9 +150,9 @@ func (g *Game) Update() error { //game logic
 		}   
 		
 		if sum == 1 {
-			for range randInt(5,10) {
-				initFloor(&floor)
-			}
+			
+			initFloor(&floor, 20)
+
 			for i := range floor {
 				for j := range floor[i] {
 					fmt.Printf("%2d ", floor[i][j])
@@ -318,86 +318,86 @@ func (g *Game) Draw(screen *ebiten.Image) {  //called every frame, graphics
 
 	// Draw sword with camera offset
 	if p.attackFramesStart { // detects if player attack has started
-  	if p.attackFramesTimer == p.attackFrames { // end of attack
-    	p.attackFramesTimer = 0
-    	p.attackFramesStart = false
-    	p.attackFlipped = (p.attackCount % 2 == 0)
-  	} else { // continue attack
+		if p.attackFramesTimer == p.attackFrames { // end of attack
+			p.attackFramesTimer = 0
+			p.attackFramesStart = false
+			p.attackFlipped = (p.attackCount % 2 == 0)
+		} else { // continue attack
 			op := &ebiten.DrawImageOptions{}
-  		frameImg := swordSprites[p.attackFramesTimer]
+			frameImg := swordSprites[p.attackFramesTimer]
 
-  		w := float64(frameImg.Bounds().Dx()) // Dimensions
-  		h := float64(frameImg.Bounds().Dy())
-  		cx := w / 2
-  		cy := h / 2
+			w := float64(frameImg.Bounds().Dx()) // Dimensions
+			h := float64(frameImg.Bounds().Dy())
+			cx := w / 2
+			cy := h / 2
 
 			var angle float64 // Determine angle (base sprite faces RIGHT)
-  		
+			
 			switch p.swordLocation {
-    		case 'd': // right
-      		angle = 0
-    		case 'a': // left
-      		angle = math.Pi
-    		case 's': // down
-      		angle = math.Pi / 2
-    		case 'w': // up
-      		angle = -math.Pi / 2
-    	}
-    	
+				case 'd': // right
+					angle = 0
+				case 'a': // left
+					angle = math.Pi
+				case 's': // down
+					angle = math.Pi / 2
+				case 'w': // up
+					angle = -math.Pi / 2
+			}
+			
 			scaleX := 2.0 // Apply vertical flipping if attack count requires
-    	scaleY := 2.0
-    		
+			scaleY := 2.0
+			
 			if p.attackFlipped {
-      	scaleY = -2.0
-    	}
+				scaleY = -2.0
+			}
 			
-    	op.GeoM.Translate(-cx, -cy) // pivot center
+			op.GeoM.Translate(-cx, -cy) // pivot center
 			
-    	op.GeoM.Scale(scaleX, scaleY) //scale, verticle
+			op.GeoM.Scale(scaleX, scaleY) //scale, verticle
 			
-    	op.GeoM.Rotate(angle) //Rotate
+			op.GeoM.Rotate(angle) //Rotate
 
-    	op.GeoM.Translate(p.swordX + cx - cam.x, p.swordY + cy - cam.y) // Move final position (centered) with camera offset
+			op.GeoM.Translate(p.swordX + cx - cam.x, p.swordY + cy - cam.y) // Move final position (centered) with camera offset
 
-    	screen.DrawImage(frameImg, op)
+			screen.DrawImage(frameImg, op)
 			
-    	p.attackFramesTimer++
-    	p.attackCount++
-  	}
+			p.attackFramesTimer++
+			p.attackCount++
+		}
 	} else { // idle sword frame
-    op := &ebiten.DrawImageOptions{}
-    frameImg := swordSprites[0]
- 		
-    w := float64(frameImg.Bounds().Dx()) // Dimensions for idle as well
-    h := float64(frameImg.Bounds().Dy())
-    cx := w / 2
-    cy := h / 2
+		op := &ebiten.DrawImageOptions{}
+		frameImg := swordSprites[0]
+		
+		w := float64(frameImg.Bounds().Dx()) // Dimensions for idle as well
+		h := float64(frameImg.Bounds().Dy())
+		cx := w / 2
+		cy := h / 2
 
-    scaleX := 2.0
-    scaleY := 2.0
-    if p.attackFlipped {
-      scaleY = -2.0
-    }
+		scaleX := 2.0
+		scaleY := 2.0
+		if p.attackFlipped {
+			scaleY = -2.0
+		}
+		
+		var angle float64 // Idle frame always faces whatever swordLocation was last set to
+		
+		switch p.swordLocation {
+			case 'd':
+				angle = 0
+			case 'a':
+				angle = math.Pi
+			case 's':
+				angle = math.Pi / 2
+			case 'w':
+				angle = -math.Pi / 2
+		}
 
-    var angle float64 // Idle frame always faces whatever swordLocation was last set to
+		op.GeoM.Translate(-cx, -cy)
+		op.GeoM.Scale(scaleX, scaleY)
+		op.GeoM.Rotate(angle)
+		op.GeoM.Translate(p.swordX + cx - cam.x, p.swordY + cy - cam.y) // with camera offset
 
-  	switch p.swordLocation {
-    	case 'd':
-      	angle = 0
-    	case 'a':
-      	angle = math.Pi
-    	case 's':
-      	angle = math.Pi / 2
-    	case 'w':
-      	angle = -math.Pi / 2
-    }
-
-    op.GeoM.Translate(-cx, -cy)
-    op.GeoM.Scale(scaleX, scaleY)
-    op.GeoM.Rotate(angle)
-    op.GeoM.Translate(p.swordX + cx - cam.x, p.swordY + cy - cam.y) // with camera offset
-
-    screen.DrawImage(frameImg, op)
+		screen.DrawImage(frameImg, op)
 	}
 
 	// Draw camera status
@@ -411,7 +411,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 func main() {
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("Chaos Crashers")
-	ebiten.SetFullscreen(true)
+	ebiten.SetFullscreen(false)
 	
 	if err := ebiten.RunGame(&Game{}); err != nil { 
 		log.Fatal(err)
