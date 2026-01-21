@@ -18,7 +18,7 @@ go mod tidy
 go run .
 ```
 
-wasd for movement, arrow keys for attack direction.
+wasd for movement & arrow keys for attack direction or standard controller dpad/joystick for movement & abxy for attack direction.
 
 [^1]:
     shoutout to my bff @crungulus for his help with assets <3

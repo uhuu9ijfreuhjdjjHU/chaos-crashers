@@ -196,20 +196,20 @@ func (g *Game) Update() error { //game logic
 
 	//~~> sword direction logic <~~\\
 
-	switch { //player sword controls
-		case ebiten.IsKeyPressed(ebiten.KeyArrowRight) && p.hitFrameDuration == 0:
+	switch { //player sword controls - arrow keys or Xbox ABXY
+		case (ebiten.IsKeyPressed(ebiten.KeyArrowRight) || ebiten.IsStandardGamepadButtonPressed(0, ebiten.StandardGamepadButtonRightRight)) && p.hitFrameDuration == 0:
 			p.swordLocation = 'd'
 			p.hitFrameDuration = p.attackFrames
 			p.attackFramesStart = true
-		case ebiten.IsKeyPressed(ebiten.KeyArrowLeft) && p.hitFrameDuration == 0:
+		case (ebiten.IsKeyPressed(ebiten.KeyArrowLeft) || ebiten.IsStandardGamepadButtonPressed(0, ebiten.StandardGamepadButtonRightLeft)) && p.hitFrameDuration == 0:
 			p.swordLocation = 'a'
 			p.hitFrameDuration = p.attackFrames
 			p.attackFramesStart = true
-		case ebiten.IsKeyPressed(ebiten.KeyArrowDown) && p.hitFrameDuration == 0:
+		case (ebiten.IsKeyPressed(ebiten.KeyArrowDown) || ebiten.IsStandardGamepadButtonPressed(0, ebiten.StandardGamepadButtonRightBottom)) && p.hitFrameDuration == 0:
 			p.swordLocation = 's'
 			p.hitFrameDuration = p.attackFrames
 			p.attackFramesStart = true
-		case ebiten.IsKeyPressed(ebiten.KeyArrowUp) && p.hitFrameDuration == 0:
+		case (ebiten.IsKeyPressed(ebiten.KeyArrowUp) || ebiten.IsStandardGamepadButtonPressed(0, ebiten.StandardGamepadButtonRightTop)) && p.hitFrameDuration == 0:
 			p.swordLocation = 'w'
 			p.hitFrameDuration = p.attackFrames
 			p.attackFramesStart = true	
@@ -235,27 +235,27 @@ func (g *Game) Update() error { //game logic
 
 	//player movement
 
-	// MOVE RIGHT (D)
-	if ebiten.IsKeyPressed(ebiten.KeyD) &&
-  !isBlocked(p.x - 25, p.y, 1, 0, blockRange, zombies) {
-  	p.x += moveSpeed
+	// MOVE RIGHT (D or D-Pad Right)
+	if (ebiten.IsKeyPressed(ebiten.KeyD) || ebiten.StandardGamepadAxisValue(0, ebiten.StandardGamepadAxisLeftStickHorizontal) > 0.5 || ebiten.IsStandardGamepadButtonPressed(0, ebiten.StandardGamepadButtonLeftRight)) &&
+		!isBlocked(p.x-25, p.y, 1, 0, blockRange, zombies) {
+		p.x += moveSpeed
 	}
-
-	// MOVE LEFT (A)
-	if ebiten.IsKeyPressed(ebiten.KeyA) &&
-  !isBlocked(p.x, p.y, -1, 0, blockRange, zombies) {
-  	p.x -= moveSpeed
+	
+	// MOVE LEFT (A or D-Pad Left)
+	if (ebiten.IsKeyPressed(ebiten.KeyA) || ebiten.StandardGamepadAxisValue(0, ebiten.StandardGamepadAxisLeftStickHorizontal) < -0.5 || ebiten.IsStandardGamepadButtonPressed(0, ebiten.StandardGamepadButtonLeftLeft)) &&
+		!isBlocked(p.x, p.y, -1, 0, blockRange, zombies) {
+		p.x -= moveSpeed
 	}
-
-	// DOWN (S)
-	if ebiten.IsKeyPressed(ebiten.KeyS) &&
-  !isBlocked(p.x, p.y, 0, 1, blockRange, zombies) { //even though going down should be -1
-  	p.y += moveSpeed																//for deincrimaenting the vert position
-	}																									//the code doesnt work that way.
-
-	// UP (W)
-	if ebiten.IsKeyPressed(ebiten.KeyW) &&
-  !isBlocked(p.x, p.y, 0, -1, blockRange, zombies) {
+	
+	// DOWN (S or D-Pad Down)
+	if (ebiten.IsKeyPressed(ebiten.KeyS) || ebiten.StandardGamepadAxisValue(0, ebiten.StandardGamepadAxisLeftStickVertical) > 0.5 || ebiten.IsStandardGamepadButtonPressed(0, ebiten.StandardGamepadButtonLeftBottom)) &&
+		!isBlocked(p.x, p.y, 0, 1, blockRange, zombies) { //even though going down should be -1
+		p.y += moveSpeed                                  //for deincrimenting the vert position
+	} 																									//the code doesnt work that way.
+	
+	// UP (W or D-Pad Up)
+	if (ebiten.IsKeyPressed(ebiten.KeyW) || ebiten.StandardGamepadAxisValue(0, ebiten.StandardGamepadAxisLeftStickVertical) < -0.5 || ebiten.IsStandardGamepadButtonPressed(0, ebiten.StandardGamepadButtonLeftTop)) &&
+		!isBlocked(p.x, p.y, 0, -1, blockRange, zombies) {
 		p.y -= moveSpeed
 	}
 
