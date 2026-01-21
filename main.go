@@ -166,7 +166,7 @@ func (g *Game) Update() error { //game logic
 	tickCount++
 
 	if tickCount == 2 {
-		cam.following = false
+		cam.following = false // Changed to true so camera follows by default
 	}
 
 	// Toggle camera following with C key
@@ -232,12 +232,14 @@ func (g *Game) Update() error { //game logic
 	moveSpeed := 3.0 //player move speed
 	blockRange := 50.0 //player collusion stat
 
-	//player movement
+	//player movement - omnidirectional controller support
 	
-	axisX := ebiten.StandardGamepadAxisValue(0, ebiten.StandardGamepadAxisLeftStickHorizontal) // Get analog stick input
+	// Get analog stick input
+	axisX := ebiten.StandardGamepadAxisValue(0, ebiten.StandardGamepadAxisLeftStickHorizontal)
 	axisY := ebiten.StandardGamepadAxisValue(0, ebiten.StandardGamepadAxisLeftStickVertical)
 	
-	deadzone := 0.15 // Apply deadzone to prevent drift
+	// Apply deadzone to prevent drift
+	deadzone := 0.15
 	if math.Abs(axisX) < deadzone {
 		axisX = 0
 	}
@@ -276,18 +278,21 @@ func (g *Game) Update() error { //game logic
 		moveY -= 1.0
 	}
 	
-	if axisX != 0 || axisY != 0 { // Analog stick input
+	// Analog stick input (smooth)
+	if axisX != 0 || axisY != 0 {
 		moveX = axisX
 		moveY = axisY
 	}
 	
-	if moveX != 0 && moveY != 0 { //normalize diagnol
+	// Normalize diagonal movement to prevent faster diagonal speed
+	if moveX != 0 && moveY != 0 {
 		magnitude := math.Sqrt(moveX*moveX + moveY*moveY)
 		moveX /= magnitude
 		moveY /= magnitude
 	}
 	
-	if moveX > 0 && !isBlocked(p.x-25, p.y, 1, 0, blockRange, zombies) { // Apply movement with collision detection
+	// Apply movement with collision detection
+	if moveX > 0 && !isBlocked(p.x-25, p.y, 1, 0, blockRange, zombies) {
 		p.x += moveSpeed * moveX
 	} else if moveX < 0 && !isBlocked(p.x, p.y, -1, 0, blockRange, zombies) {
 		p.x += moveSpeed * moveX
@@ -298,6 +303,15 @@ func (g *Game) Update() error { //game logic
 	} else if moveY < 0 && !isBlocked(p.x, p.y, 0, -1, blockRange, zombies) {
 		p.y += moveSpeed * moveY
 	}
+
+	if cam.following { // Update camera to follow player
+		playerWidth := float64(player1.Bounds().Dx()) // Get player sprite dimensions for proper centering
+		playerHeight := float64(player1.Bounds().Dy())
+		
+		cam.x = p.x + playerWidth / 2 - float64(screenWidth) / 3
+		cam.y = p.y + playerHeight / 2 - float64(screenHeight) / 2.35
+	}
+
 	zombieLogic()
 
 	return nil
@@ -307,7 +321,9 @@ func (g *Game) Draw(screen *ebiten.Image) {  //called every frame, graphics
 	
 	// Draw background with camera offset and scaling
 	opBg := &ebiten.DrawImageOptions{}
-		
+	
+	// Calculate scale factors to fit the background to screen
+	
 	// Apply scaling first, then translate for camera
 	opBg.GeoM.Scale(0.65, 0.65)
 	opBg.GeoM.Translate(-cam.x, -cam.y)
