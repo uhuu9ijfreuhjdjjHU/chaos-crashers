@@ -278,11 +278,118 @@ func isBlocked(px, py float64, dx, dy float64, blockRange float64, zombies []axe
 		checkX := px + dx*blockRange
 		checkY := py + dy*blockRange
 		
-		// If an enemy is near that projected point → blocked
+		// If an enemy is near that projected point â†’ blocked
 		if abs(z.x-checkX) < 50 && abs(z.y-checkY) < 50 {
 			return true
 		}
 	}
 
 	return false
+}
+
+func setupPortalsForRoom(roomX, roomY int, floor *[12][12]int) {
+	portals = []portal{} // Clear existing portals
+	
+	// Room background is 914x540, scaled at 0.65 = 594x351
+	// Portal positions should be at the edges of the visible room
+	roomCenterX := 297.0 // 594 / 2
+	roomCenterY := 175.5 // 351 / 2
+	
+	// Check and create portals for each direction
+	// Up
+	if roomY > 0 && floor[roomX][roomY-1] != 0 {
+		portals = append(portals, portal{
+			x: roomCenterX,
+			y: 20.0,
+			targetRoomX: roomX,
+			targetRoomY: roomY - 1,
+			direction: "up",
+		})
+	}
+	
+	// Down
+	if roomY < 11 && floor[roomX][roomY+1] != 0 {
+		portals = append(portals, portal{
+			x: roomCenterX,
+			y: 330.0,
+			targetRoomX: roomX,
+			targetRoomY: roomY + 1,
+			direction: "down",
+		})
+	}
+	
+	// Left
+	if roomX > 0 && floor[roomX-1][roomY] != 0 {
+		portals = append(portals, portal{
+			x: 20.0,
+			y: roomCenterY,
+			targetRoomX: roomX - 1,
+			targetRoomY: roomY,
+			direction: "left",
+		})
+	}
+	
+	// Right
+	if roomX < 11 && floor[roomX+1][roomY] != 0 {
+		portals = append(portals, portal{
+			x: 574.0,
+			y: roomCenterY,
+			targetRoomX: roomX + 1,
+			targetRoomY: roomY,
+			direction: "right",
+		})
+	}
+}
+
+func enterRoom(roomX, roomY int, floor *[12][12]int, roomCleared *[12][12]bool) {
+	// Clear all zombies
+	zombies = []axeZombie{}
+	
+	// Setup portals for new room
+	setupPortalsForRoom(roomX, roomY, floor)
+	
+	// Check if room requires enemies and hasn't been cleared
+	if floor[roomX][roomY] == 2 && !roomCleared[roomX][roomY] {
+		spawnAxeZombies()
+		roomLocked = true
+	} else {
+		roomLocked = false
+	}
+	
+	fmt.Printf("Entered room [%d][%d], value: %d, locked: %v\n", roomX, roomY, floor[roomX][roomY], roomLocked)
+}
+
+func checkRoomCleared(roomX, roomY int, roomCleared *[12][12]bool) {
+	if !roomLocked {
+		return
+	}
+	
+	// Count living zombies
+	aliveCount := 0
+	for i := range zombies {
+		if zombies[i].hp > 0 {
+			aliveCount++
+		}
+	}
+	
+	// If all zombies dead, unlock room
+	if aliveCount == 0 {
+		roomLocked = false
+		roomCleared[roomX][roomY] = true
+		fmt.Printf("Room [%d][%d] cleared!\n", roomX, roomY)
+	}
+}
+
+func checkPortalCollision(px, py float64) *portal {
+	if roomLocked {
+		return nil // Can't use portals while room is locked
+	}
+	
+	portalRange := 40.0
+	for i := range portals {
+		if abs(px - portals[i].x) < portalRange && abs(py - portals[i].y) < portalRange {
+			return &portals[i]
+		}
+	}
+	return nil
 }

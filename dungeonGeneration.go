@@ -14,7 +14,7 @@ func initFloor(floor *[12][12]int, targetCount int) {
 	currentCount := 0
 	centerI, centerJ := 6, 6 // Initialize the center point to 1
 	if centerI < maxI && centerJ < maxJ {
-		floor[centerI][centerJ] = 1
+		floor[centerI][centerJ] = 1 // Starting room - no enemies
 		initialized[[2]int{centerI, centerJ}] = true
 		currentCount++
 	} // <- This closing brace was missing
@@ -45,9 +45,9 @@ func initFloor(floor *[12][12]int, targetCount int) {
 		if len(neighbors) == 0 {
 			continue
 		}
-		firstNeighbor := neighbors[0] // Always initialize one neighbor 100% - 50% - 25% - 12.50%
+		firstNeighbor := neighbors[0] // Always initialize one neighbor - value 2 for enemy rooms
 		if !initialized[firstNeighbor] {
-			floor[firstNeighbor[0]][firstNeighbor[1]] = randInt(1, 2)
+			floor[firstNeighbor[0]][firstNeighbor[1]] = 2 // Value 2 = enemy room
 			initialized[firstNeighbor] = true
 			currentCount++
 			queue = append(queue, firstNeighbor)
@@ -64,7 +64,7 @@ func initFloor(floor *[12][12]int, targetCount int) {
 			}
 			
 			if !initialized[neighbor] && randInt(1, 100) <= int(probability) {
-				floor[neighbor[0]][neighbor[1]] = randInt(1, 2)
+				floor[neighbor[0]][neighbor[1]] = 2 // Value 2 = enemy room
 				initialized[neighbor] = true
 				currentCount++
 				queue = append(queue, neighbor)

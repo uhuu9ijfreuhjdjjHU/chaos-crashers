@@ -15,6 +15,7 @@ var ( //declare variable for images, name *ebiten.Image.
 	player1 *ebiten.Image
 	swordSprites []*ebiten.Image
 	axeZombieDeathSprites []*ebiten.Image
+	portalSprite *ebiten.Image
 
 	axeZombieSprites []*ebiten.Image //an array of image files means it for a animation
 	axeZombieHitSprites []*ebiten.Image	//see functions.go
@@ -35,6 +36,12 @@ var ( //declare variable for images, name *ebiten.Image.
 	floorInit bool = false
 
 	zombies []axeZombie
+	
+	// Room system variables
+	currentRoomX int = 6
+	currentRoomY int = 6
+	roomCleared [12][12]bool
+	roomLocked bool = false
 )
 
 type Game struct{}
@@ -115,6 +122,15 @@ type axeZombie struct {
 	knockbackSpeed	float64
 }
 
+type portal struct {
+	x, y float64
+	targetRoomX, targetRoomY int
+	direction string // "up", "down", "left", "right"
+}
+
+var portals []portal
+
+
 func init() { //initialize images to variables here.
 	var err error
 	
@@ -128,12 +144,17 @@ func init() { //initialize images to variables here.
 		log.Fatal(err)
 	}
 	
+	portalSprite, _, err = ebitenutil.NewImageFromFile("assets/images/lightSaber.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+	
 	loadAxeZombieSprites() //call animation functions here
 	loadAxeZombieHitSprites()
 	loadSwordSprites()
 	loadAxeZombieDeathSprites()
 
-	spawnAxeZombies() //loads zombies, condition changes zombie speed.
+	// Don't spawn zombies at init - wait for room entry
 }
 
 func (g *Game) Update() error { //game logic
@@ -158,6 +179,9 @@ func (g *Game) Update() error { //game logic
 				}
 				fmt.Println()
 			}
+			
+			// Initialize the starting room (no enemies in starting room)
+			enterRoom(currentRoomX, currentRoomY, &floor, &roomCleared)
 		}
 
 		floorInit = true
@@ -306,6 +330,37 @@ func (g *Game) Update() error { //game logic
 		cam.y = p.y + playerHeight / 2 - float64(screenHeight) / 2.35
 	}
 
+	// Check for portal collision and room transition
+	portal := checkPortalCollision(p.x, p.y)
+	if portal != nil {
+		// Transition to new room
+		currentRoomX = portal.targetRoomX
+		currentRoomY = portal.targetRoomY
+		
+		// Reset player position based on which portal they entered
+		// Room is 594x351 after scaling
+		// Offset player away from the portal to prevent immediate re-trigger
+		switch portal.direction {
+		case "up":
+			p.y = 280.0 // Enter from bottom, offset up from portal
+			p.x = 297.0
+		case "down":
+			p.y = 70.0 // Enter from top, offset down from portal
+			p.x = 297.0
+		case "left":
+			p.x = 520.0 // Enter from right, offset left from portal
+			p.y = 175.5
+		case "right":
+			p.x = 74.0 // Enter from left, offset right from portal
+			p.y = 175.5
+		}
+		
+		enterRoom(currentRoomX, currentRoomY, &floor, &roomCleared)
+	}
+	
+	// Check if current room is cleared
+	checkRoomCleared(currentRoomX, currentRoomY, &roomCleared)
+
 	zombieLogic()
 
 	return nil
@@ -352,6 +407,23 @@ func (g *Game) Draw(screen *ebiten.Image) {  //called every frame, graphics
 			}
 			
 			screen.DrawImage(axeZombieSprites[z.walkFrame], op)
+		}
+	}
+
+	// Draw portals (only if room is not locked)
+	if !roomLocked {
+		for i := range portals {
+			op := &ebiten.DrawImageOptions{}
+			
+			// lightSaber is 400x700, scale down to reasonable size (about 40x70 pixels)
+			op.GeoM.Scale(0.1, 0.1)
+			
+			// Center the portal on its position
+			pw := float64(portalSprite.Bounds().Dx()) * 0.1  // 400 * 0.1 = 40px
+			ph := float64(portalSprite.Bounds().Dy()) * 0.1  // 700 * 0.1 = 70px
+			op.GeoM.Translate(portals[i].x - pw/2 - cam.x, portals[i].y - ph/2 - cam.y)
+			
+			screen.DrawImage(portalSprite, op)
 		}
 	}
 
@@ -440,7 +512,9 @@ func (g *Game) Draw(screen *ebiten.Image) {  //called every frame, graphics
 	}
 
 	// Draw camera status
-	ebitenutil.DebugPrint(screen, fmt.Sprintf("Camera Follow: %v (Toggle with C)", cam.following))
+	debugText := fmt.Sprintf("Camera Follow: %v (Toggle with C)\nRoom: [%d][%d] | Locked: %v", 
+		cam.following, currentRoomX, currentRoomY, roomLocked)
+	ebitenutil.DebugPrint(screen, debugText)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
