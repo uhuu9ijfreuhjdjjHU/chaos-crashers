@@ -13,6 +13,7 @@ import (
 var ( //declare variable for images, name *ebiten.Image.
 	background *ebiten.Image
 	player1 *ebiten.Image
+	playerHP *ebiten.Image
 	swordSprites []*ebiten.Image
 	axeZombieDeathSprites []*ebiten.Image
 	portalSprite *ebiten.Image
@@ -140,6 +141,11 @@ func init() { //initialize images to variables here.
 	}
 
 	player1, _, err = ebitenutil.NewImageFromFile("assets/images/Sprite-0001.png") //will not run if empty
+	if err != nil {
+		log.Fatal(err)
+	}
+	
+	playerHP, _, err = ebitenutil.NewImageFromFile("assets/images/healthComponent.png") //will not run if empty
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -368,6 +374,13 @@ func (g *Game) Update() error { //game logic
 
 func (g *Game) Draw(screen *ebiten.Image) {  //called every frame, graphics
 	
+	if p.hp >= 0 {
+		for i := 0; i < p.hp; i++ {
+			op := &ebiten.DrawImageOptions{}
+			op.GeoM.Translate(float64(10 + (i * 15)), 430)
+			screen.DrawImage(playerHP, op)
+		}
+	}
 	// Draw background with camera offset and scaling
 	opBg := &ebiten.DrawImageOptions{}
 	
