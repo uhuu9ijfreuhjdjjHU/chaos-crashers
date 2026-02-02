@@ -62,6 +62,7 @@ var cam = Camera{
 type player struct {
 	x float64
 	y float64
+	attackRange float64
 
 	swordX float64
 	swordY float64
@@ -87,6 +88,7 @@ var p = player {
 
 	swordX: 560,
 	swordY: 240 + 100,
+	attackRange: float64(77.5), //swordHitRange in zombieLogic.go
 
 	hp: 20,
 
