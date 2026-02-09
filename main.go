@@ -164,15 +164,13 @@ func init() { //initialize images to variables here.
 		log.Fatal(err)
 	}
 	
-	loadAxeZombieSprites() //call animation functions here
-	loadAxeZombieHitSprites()
-	loadSwordSprites()
-	loadAxeZombieDeathSprites()
-
-	// Don't spawn zombies at init - wait for room entry
+	go loadAxeZombieSprites() //call animation functions here
+	go loadAxeZombieHitSprites()
+	go loadSwordSprites()
+	go loadAxeZombieDeathSprites()
 }
 
-func (g *Game) Update() error { //game logic
+func (g *Game) Update() error { //game logic game loop
 
 	if floorInit == false { //floor initialize
 		
@@ -186,7 +184,7 @@ func (g *Game) Update() error { //game logic
 		
 		if sum == 1 {
 			
-			initFloor(&floor, 20)
+			go initFloor(&floor, 20)
 
 			for i := range floor {
 				for j := range floor[i] {
@@ -376,12 +374,12 @@ func (g *Game) Update() error { //game logic
 	// Check if current room is cleared
 	checkRoomCleared(currentRoomX, currentRoomY, &roomCleared)
 
-	zombieLogic()
+	go zombieLogic()
 
 	return nil
 }
 
-func (g *Game) Draw(screen *ebiten.Image) {  //called every frame, graphics
+func (g *Game) Draw(screen *ebiten.Image) {  //called every frame, graphics loop
 	
 	if p.hp >= 0 {
 		for i := 0; i < p.hp; i++ {
